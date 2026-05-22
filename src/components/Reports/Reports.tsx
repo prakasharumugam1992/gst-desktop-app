@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Calendar, TrendingUp, TrendingDown, IndianRupee } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, IndianRupee, Download } from 'lucide-react';
 import Header from '../Layout/Header';
 import { getInvoices } from '../../store/store';
 import { formatCurrency } from '../../utils/gst';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { downloadInvoicesCSV, downloadReportCSV } from '../../utils/export';
 
 type ReportType = 'sales' | 'purchase' | 'gst' | 'party';
 
@@ -32,6 +33,42 @@ export default function Reports() {
   const totalPurchases = purchaseInvoices.reduce((s, i) => s + i.grandTotal, 0);
   const totalSalesTax = salesInvoices.reduce((s, i) => s + i.totalTax, 0);
   const totalPurchaseTax = purchaseInvoices.reduce((s, i) => s + i.totalTax, 0);
+
+  const handleDownload = () => {
+    if (activeReport === 'sales') {
+      downloadInvoicesCSV(salesInvoices);
+    } else if (activeReport === 'purchase') {
+      downloadInvoicesCSV(purchaseInvoices);
+    } else if (activeReport === 'gst') {
+      downloadReportCSV(
+        'GST Monthly Report',
+        ['Month', 'Sales', 'Purchases', 'Net', 'Total Tax'],
+        monthlyBreakdown.map(row => ({
+          label: format(new Date(row.month + '-01'), 'MMMM yyyy'),
+          values: [
+            String(row.sales),
+            String(row.purchases),
+            String(row.sales - row.purchases),
+            String(row.tax),
+          ],
+        }))
+      );
+    } else {
+      downloadReportCSV(
+        'Party-wise Report',
+        ['Party Name', 'Type', 'Invoices', 'Total Amount', 'Total Tax'],
+        partyReport.map(row => ({
+          label: `"${row.name}"`,
+          values: [
+            row.type === 'sales' ? 'Customer' : 'Supplier',
+            String(row.invoiceCount),
+            String(row.totalAmount),
+            String(row.totalTax),
+          ],
+        }))
+      );
+    }
+  };
 
   const reportTabs: { key: ReportType; label: string }[] = [
     { key: 'sales', label: 'Sales Report' },
@@ -107,7 +144,7 @@ export default function Reports() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Calendar className="w-4 h-4 text-gray-500" />
             <input
               type="date"
@@ -122,6 +159,14 @@ export default function Reports() {
               onChange={e => setEndDate(e.target.value)}
               className="input-field w-auto text-sm"
             />
+            <button
+              onClick={() => handleDownload()}
+              className="btn-secondary flex items-center gap-2 text-sm"
+              title="Download report"
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </button>
           </div>
         </div>
 

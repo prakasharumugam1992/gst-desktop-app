@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Search, Trash2, Eye, FileText } from 'lucide-react';
+import { Plus, Search, Trash2, Eye, FileText, Download } from 'lucide-react';
 import Header from '../Layout/Header';
 import { getInvoicesByType, deleteInvoice } from '../../store/store';
 import { formatCurrency } from '../../utils/gst';
 import { Invoice } from '../../types';
 import { format } from 'date-fns';
+import { downloadInvoiceAsText, downloadInvoicesCSV } from '../../utils/export';
+import { getBusinessProfile } from '../../store/store';
 
 export default function InvoiceList() {
   const navigate = useNavigate();
@@ -63,13 +65,25 @@ export default function InvoiceList() {
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
-          <button
-            onClick={() => navigate(`/invoices/${invoiceType}/new`)}
-            className="btn-primary flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            New {invoiceType === 'sales' ? 'Sale' : 'Purchase'} Invoice
-          </button>
+          <div className="flex gap-2">
+            {filtered.length > 0 && (
+              <button
+                onClick={() => downloadInvoicesCSV(filtered)}
+                className="btn-secondary flex items-center gap-2"
+                title="Download all as CSV"
+              >
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+            )}
+            <button
+              onClick={() => navigate(`/invoices/${invoiceType}/new`)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              New {invoiceType === 'sales' ? 'Sale' : 'Purchase'} Invoice
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
@@ -149,6 +163,13 @@ export default function InvoiceList() {
                           title="View"
                         >
                           <Eye className="w-4 h-4 text-gray-500" />
+                        </button>
+                        <button
+                          onClick={() => downloadInvoiceAsText(invoice, getBusinessProfile())}
+                          className="p-1.5 rounded-lg hover:bg-blue-50"
+                          title="Download"
+                        >
+                          <Download className="w-4 h-4 text-blue-500" />
                         </button>
                         <button
                           onClick={() => handleDelete(invoice.id)}

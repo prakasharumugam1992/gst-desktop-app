@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Download } from 'lucide-react';
 import Header from '../Layout/Header';
 import { getInvoices } from '../../store/store';
 import { calculateGSTSummary, formatCurrency } from '../../utils/gst';
 import { Invoice } from '../../types';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { downloadGSTReturnCSV } from '../../utils/export';
 
 export default function GSTReturns() {
   const [activeTab, setActiveTab] = useState<'gstr1' | 'gstr3b'>('gstr1');
@@ -62,6 +63,18 @@ export default function GSTReturns() {
               onChange={e => setSelectedMonth(e.target.value)}
               className="input-field w-auto"
             />
+            <button
+              onClick={() => downloadGSTReturnCSV(
+                activeTab === 'gstr1' ? 'GSTR-1' : 'GSTR-3B',
+                selectedMonth,
+                activeTab === 'gstr1' ? salesInvoices : filteredInvoices,
+              )}
+              className="btn-secondary flex items-center gap-2 text-sm"
+              title="Download GST Return"
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </button>
           </div>
         </div>
 

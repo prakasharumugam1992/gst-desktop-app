@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Printer, Building2 } from 'lucide-react';
+import { ArrowLeft, Printer, Building2, Download } from 'lucide-react';
 import Header from '../Layout/Header';
 import { getInvoiceById, getBusinessProfile } from '../../store/store';
 import { formatCurrency } from '../../utils/gst';
 import { format } from 'date-fns';
+import { downloadInvoiceAsText } from '../../utils/export';
 
 export default function InvoiceView() {
   const navigate = useNavigate();
@@ -40,6 +41,13 @@ export default function InvoiceView() {
             Back to Invoices
           </button>
           <div className="flex gap-2">
+            <button
+              onClick={() => downloadInvoiceAsText(invoice, business)}
+              className="btn-secondary flex items-center gap-2 text-sm"
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </button>
             <button onClick={handlePrint} className="btn-secondary flex items-center gap-2 text-sm">
               <Printer className="w-4 h-4" />
               Print

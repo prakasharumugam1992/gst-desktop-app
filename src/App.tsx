@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
 import Layout from './components/Layout/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
 import BusinessProfile from './components/Business/BusinessProfile';
@@ -9,11 +10,39 @@ import InvoiceForm from './components/Invoices/InvoiceForm';
 import InvoiceView from './components/Invoices/InvoiceView';
 import GSTReturns from './components/Returns/GSTReturns';
 import Reports from './components/Reports/Reports';
+import LoginForm from './components/Auth/LoginForm';
+import RegisterForm from './components/Auth/RegisterForm';
+import { ReactNode } from 'react';
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
+function PublicRoute({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      <Route path="/login" element={<PublicRoute><LoginForm /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><RegisterForm /></PublicRoute>} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Dashboard />} />
         <Route path="business" element={<BusinessProfile />} />
         <Route path="parties" element={<PartyList />} />

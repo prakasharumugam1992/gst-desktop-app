@@ -9,8 +9,10 @@ import {
   Receipt,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -24,6 +26,7 @@ const navItems = [
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <aside
@@ -70,12 +73,20 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className={`p-4 border-t border-primary-700 ${collapsed ? 'text-center' : ''}`}>
-        {!collapsed && (
-          <p className="text-xs text-primary-400">
-            GST Filing App v1.0
-          </p>
+      <div className={`p-4 border-t border-primary-700 space-y-3 ${collapsed ? 'text-center' : ''}`}>
+        {!collapsed && user && (
+          <p className="text-xs text-primary-300 truncate">{user.name}</p>
         )}
+        <button
+          onClick={logout}
+          className={`flex items-center gap-2 text-sm text-primary-200 hover:text-white transition-colors ${
+            collapsed ? 'justify-center w-full' : ''
+          }`}
+          title="Logout"
+        >
+          <LogOut className="w-4 h-4 flex-shrink-0" />
+          {!collapsed && <span>Logout</span>}
+        </button>
       </div>
     </aside>
   );

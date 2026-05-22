@@ -1,9 +1,11 @@
-import { BusinessProfile, Party, Invoice } from '../types';
+import { BusinessProfile, Party, Invoice, User } from '../types';
 
 const STORAGE_KEYS = {
   BUSINESS: 'gst_app_business',
   PARTIES: 'gst_app_parties',
   INVOICES: 'gst_app_invoices',
+  USERS: 'gst_app_users',
+  CURRENT_USER: 'gst_app_current_user',
 };
 
 function getItem<T>(key: string, fallback: T): T {
@@ -92,4 +94,43 @@ export function getInvoicesByDateRange(startDate: string, endDate: string): Invo
 
 export function getNextInvoiceCount(type: 'sales' | 'purchase'): number {
   return getInvoicesByType(type).length;
+}
+
+export function getUsers(): User[] {
+  return getItem<User[]>(STORAGE_KEYS.USERS, []);
+}
+
+export function getUserByEmail(email: string): User | undefined {
+  return getUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+}
+
+export function registerUser(user: User): { success: boolean; error?: string } {
+  const existing = getUserByEmail(user.email);
+  if (existing) {
+    return { success: false, error: 'An account with this email already exists.' };
+  }
+  const users = getUsers();
+  users.push(user);
+  setItem(STORAGE_KEYS.USERS, users);
+  return { success: true };
+}
+
+export function loginUser(email: string, password: string): { success: boolean; user?: User; error?: string } {
+  const user = getUserByEmail(email);
+  if (!user) {
+    return { success: false, error: 'No account found with this email.' };
+  }
+  if (user.password !== password) {
+    return { success: false, error: 'Incorrect password.' };
+  }
+  setItem(STORAGE_KEYS.CURRENT_USER, user);
+  return { success: true, user };
+}
+
+export function getCurrentUser(): User | null {
+  return getItem<User | null>(STORAGE_KEYS.CURRENT_USER, null);
+}
+
+export function logoutUser(): void {
+  localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
 }
