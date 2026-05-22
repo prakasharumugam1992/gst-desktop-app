@@ -1,7 +1,8 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Receipt, UserPlus, Mail, Lock, User } from 'lucide-react';
+import { Receipt, UserPlus, Mail, Lock, User, Key, Loader2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { validateActivationKey } from '../../utils/activation';
 
 export default function RegisterForm() {
   const navigate = useNavigate();
@@ -10,9 +11,12 @@ export default function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [activationKey, setActivationKey] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [keyStatus, setKeyStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -37,6 +41,24 @@ export default function RegisterForm() {
       setError('Passwords do not match.');
       return;
     }
+    if (!activationKey.trim()) {
+      setError('Please enter your activation key.');
+      return;
+    }
+
+    setLoading(true);
+    setKeyStatus('validating');
+
+    const keyResult = await validateActivationKey(activationKey.trim());
+
+    if (!keyResult.valid) {
+      setKeyStatus('invalid');
+      setError(keyResult.message);
+      setLoading(false);
+      return;
+    }
+
+    setKeyStatus('valid');
 
     const result = register(name.trim(), email.trim(), password);
     if (result.success) {
@@ -44,6 +66,7 @@ export default function RegisterForm() {
     } else {
       setError(result.error || 'Registration failed.');
     }
+    setLoading(false);
   };
 
   return (
@@ -78,6 +101,7 @@ export default function RegisterForm() {
                   placeholder="John Doe"
                   className="input-field pl-10"
                   autoFocus
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -92,6 +116,7 @@ export default function RegisterForm() {
                   onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   className="input-field pl-10"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -106,6 +131,7 @@ export default function RegisterForm() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
                   className="input-field pl-10"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -120,13 +146,60 @@ export default function RegisterForm() {
                   onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter your password"
                   className="input-field pl-10"
+                  disabled={loading}
                 />
               </div>
             </div>
 
-            <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2 py-2.5">
-              <UserPlus className="w-4 h-4" />
-              Create Account
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Activation Key</label>
+              <div className="relative">
+                <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={activationKey}
+                  onChange={e => {
+                    setActivationKey(e.target.value);
+                    if (keyStatus !== 'idle') setKeyStatus('idle');
+                  }}
+                  placeholder="Enter your activation key"
+                  className={`input-field pl-10 pr-10 ${
+                    keyStatus === 'valid' ? 'border-green-500 focus:ring-green-500' :
+                    keyStatus === 'invalid' ? 'border-red-500 focus:ring-red-500' : ''
+                  }`}
+                  disabled={loading}
+                />
+                {keyStatus === 'validating' && (
+                  <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-primary-500 animate-spin" />
+                )}
+                {keyStatus === 'valid' && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 text-sm font-medium">&#10003;</span>
+                )}
+                {keyStatus === 'invalid' && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 text-sm font-medium">&#10007;</span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-gray-400">
+                Enter the activation key provided by your administrator
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="btn-primary w-full flex items-center justify-center gap-2 py-2.5"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Validating...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  Create Account
+                </>
+              )}
             </button>
           </form>
 
