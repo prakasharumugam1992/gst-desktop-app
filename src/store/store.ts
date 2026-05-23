@@ -1,4 +1,4 @@
-import { BusinessProfile, Party, Invoice, User } from '../types';
+import { BusinessProfile, Party, Invoice, User, Product, Bill, IndustrySettings } from '../types';
 
 const STORAGE_KEYS = {
   BUSINESS: 'gst_app_business',
@@ -6,6 +6,9 @@ const STORAGE_KEYS = {
   INVOICES: 'gst_app_invoices',
   USERS: 'gst_app_users',
   CURRENT_USER: 'gst_app_current_user',
+  PRODUCTS: 'gst_app_products',
+  BILLS: 'gst_app_bills',
+  INDUSTRY_SETTINGS: 'gst_app_industry_settings',
 };
 
 function getItem<T>(key: string, fallback: T): T {
@@ -133,4 +136,89 @@ export function getCurrentUser(): User | null {
 
 export function logoutUser(): void {
   localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+}
+
+// ---- Products ----
+
+export function getProducts(): Product[] {
+  return getItem<Product[]>(STORAGE_KEYS.PRODUCTS, []);
+}
+
+export function saveProduct(product: Product): void {
+  const products = getProducts();
+  const index = products.findIndex(p => p.id === product.id);
+  if (index >= 0) {
+    products[index] = product;
+  } else {
+    products.push(product);
+  }
+  setItem(STORAGE_KEYS.PRODUCTS, products);
+}
+
+export function deleteProduct(id: string): void {
+  const products = getProducts().filter(p => p.id !== id);
+  setItem(STORAGE_KEYS.PRODUCTS, products);
+}
+
+export function getProductById(id: string): Product | undefined {
+  return getProducts().find(p => p.id === id);
+}
+
+export function getProductByBarcode(barcode: string): Product | undefined {
+  return getProducts().find(p => p.barcode === barcode && p.isActive);
+}
+
+export function searchProducts(query: string): Product[] {
+  const q = query.toLowerCase();
+  return getProducts().filter(p =>
+    p.isActive && (
+      p.name.toLowerCase().includes(q) ||
+      p.barcode.includes(q) ||
+      p.sku.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q)
+    )
+  );
+}
+
+// ---- Bills ----
+
+export function getBills(): Bill[] {
+  return getItem<Bill[]>(STORAGE_KEYS.BILLS, []);
+}
+
+export function saveBill(bill: Bill): void {
+  const bills = getBills();
+  const index = bills.findIndex(b => b.id === bill.id);
+  if (index >= 0) {
+    bills[index] = bill;
+  } else {
+    bills.push(bill);
+  }
+  setItem(STORAGE_KEYS.BILLS, bills);
+}
+
+export function getBillById(id: string): Bill | undefined {
+  return getBills().find(b => b.id === id);
+}
+
+export function getNextBillNumber(): string {
+  const bills = getBills();
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+  const todayBills = bills.filter(b => b.billNumber.startsWith(`BILL/${dateStr}`));
+  return `BILL/${dateStr}/${String(todayBills.length + 1).padStart(4, '0')}`;
+}
+
+// ---- Industry Settings ----
+
+export function getIndustrySettings(): IndustrySettings {
+  return getItem<IndustrySettings>(STORAGE_KEYS.INDUSTRY_SETTINGS, {
+    selectedIndustry: 'retail',
+    customFields: [],
+    categories: ['General'],
+  });
+}
+
+export function saveIndustrySettings(settings: IndustrySettings): void {
+  setItem(STORAGE_KEYS.INDUSTRY_SETTINGS, settings);
 }

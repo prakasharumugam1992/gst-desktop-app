@@ -12,6 +12,11 @@ import GSTReturns from './components/Returns/GSTReturns';
 import Reports from './components/Reports/Reports';
 import LoginForm from './components/Auth/LoginForm';
 import RegisterForm from './components/Auth/RegisterForm';
+import ProductList from './components/Products/ProductList';
+import ProductForm from './components/Products/ProductForm';
+import QuickBilling from './components/Billing/QuickBilling';
+import BillHistory from './components/Billing/BillHistory';
+import IndustrySettingsPage from './components/Billing/IndustrySettings';
 import { ReactNode } from 'react';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -53,6 +58,12 @@ export default function App() {
         <Route path="invoices/:type/view/:id" element={<InvoiceView />} />
         <Route path="returns" element={<GSTReturns />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="products" element={<ProductList />} />
+        <Route path="products/new" element={<ProductForm />} />
+        <Route path="products/edit/:id" element={<ProductForm />} />
+        <Route path="billing" element={<QuickBilling />} />
+        <Route path="bill-history" element={<BillHistory />} />
+        <Route path="industry-settings" element={<IndustrySettingsPage />} />
       </Route>
     </Routes>
   );

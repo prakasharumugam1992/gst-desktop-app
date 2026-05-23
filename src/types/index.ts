@@ -149,3 +149,100 @@ export const UNITS = [
   'BOX', 'BAG', 'BTL', 'BDL', 'SET', 'PAC', 'DOZ', 'ROL',
   'TON', 'QTL', 'UNT',
 ];
+
+export type IndustryType =
+  | 'retail'
+  | 'restaurant'
+  | 'pharmacy'
+  | 'electronics'
+  | 'textiles'
+  | 'grocery'
+  | 'hardware'
+  | 'automotive'
+  | 'custom';
+
+export interface CustomField {
+  key: string;
+  label: string;
+  type: 'text' | 'number' | 'date' | 'select';
+  options?: string[];
+  required?: boolean;
+}
+
+export interface IndustryConfig {
+  id: IndustryType;
+  name: string;
+  description: string;
+  icon: string;
+  defaultUnit: string;
+  defaultGstRate: GSTRate;
+  customFields: CustomField[];
+  commonHsnCodes: { code: string; description: string }[];
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  barcode: string;
+  sku: string;
+  hsnCode: string;
+  description: string;
+  category: string;
+  unit: string;
+  mrp: number;
+  sellingPrice: number;
+  purchasePrice: number;
+  gstRate: GSTRate;
+  stock: number;
+  lowStockAlert: number;
+  customFields: Record<string, string>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BillItem {
+  id: string;
+  productId: string;
+  productName: string;
+  barcode: string;
+  hsnCode: string;
+  quantity: number;
+  unit: string;
+  mrp: number;
+  sellingPrice: number;
+  discount: number;
+  gstRate: number;
+  taxableAmount: number;
+  cgstAmount: number;
+  sgstAmount: number;
+  igstAmount: number;
+  totalAmount: number;
+}
+
+export interface Bill {
+  id: string;
+  billNumber: string;
+  billDate: string;
+  customerName: string;
+  customerPhone: string;
+  items: BillItem[];
+  subtotal: number;
+  totalDiscount: number;
+  totalCgst: number;
+  totalSgst: number;
+  totalIgst: number;
+  totalTax: number;
+  grandTotal: number;
+  roundOff: number;
+  paymentMode: 'cash' | 'card' | 'upi' | 'credit';
+  isInterState: boolean;
+  status: 'completed' | 'cancelled' | 'returned';
+  createdAt: string;
+}
+
+export interface IndustrySettings {
+  selectedIndustry: IndustryType;
+  customFields: CustomField[];
+  categories: string[];
+}

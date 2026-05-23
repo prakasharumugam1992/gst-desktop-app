@@ -10,18 +10,26 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Package,
+  Barcode,
+  History,
+  Settings,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/billing', icon: Barcode, label: 'Quick Billing' },
+  { to: '/products', icon: Package, label: 'Products' },
+  { to: '/bill-history', icon: History, label: 'Bill History' },
   { to: '/business', icon: Building2, label: 'Business Profile' },
   { to: '/parties', icon: Users, label: 'Parties' },
   { to: '/invoices/sales', icon: FileText, label: 'Sales Invoices' },
   { to: '/invoices/purchase', icon: ShoppingCart, label: 'Purchase Invoices' },
   { to: '/returns', icon: Receipt, label: 'GST Returns' },
   { to: '/reports', icon: FileBarChart, label: 'Reports' },
+  { to: '/industry-settings', icon: Settings, label: 'Industry Settings' },
 ];
 
 export default function Sidebar() {
@@ -52,7 +60,7 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-4 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
